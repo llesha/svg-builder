@@ -7,7 +7,6 @@ val logback_version: String by project
 plugins {
     kotlin("jvm") version "1.8.10"
     id("io.ktor.plugin") version "2.2.3"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.20"
 }
 
 group = "llesha"
@@ -27,17 +26,17 @@ repositories {
 
 dependencies {
     implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
-    implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
-    implementation("io.ktor:ktor-network-tls:$ktor_version")
-    implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-sessions-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-html-builder:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-core-jvm:2.3.4")
+    implementation("io.ktor:ktor-network-tls-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-cors-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-sessions-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-auth-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-auth-jwt:2.3.4")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:2.3.4")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:2.3.4")
+    implementation("io.ktor:ktor-server-html-builder:2.3.4")
+    implementation("io.ktor:ktor-server-netty-jvm:2.3.4")
     testImplementation(kotlin("test"))
 }
 
