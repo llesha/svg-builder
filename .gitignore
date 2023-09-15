@@ -5,3 +5,10 @@
 /build
 gradlew
 gradlew.bat
+/svg-multiplatform/build
+/svg-multiplatform/.idea
+/svg-multiplatform/.gradle
+/svg-multiplatform/gradle
+/svg-multiplatform/kotlin-js-store
+/svg-server/build
+/svg-server/gradle

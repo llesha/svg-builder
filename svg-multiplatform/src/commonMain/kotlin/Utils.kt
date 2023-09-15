@@ -1,3 +1,4 @@
+import grammar.GrammarError
 import grammar.Type
 import obj.Obj
 import kotlin.math.roundToInt
@@ -14,6 +15,10 @@ object Utils {
 
     fun String.toNum(): Num {
         return this.toFloat()
+    }
+
+    fun checkNumeric(value: Type, operation: String) {
+        if (value.value !is Num) throw GrammarError("$operation is not applicable to $value of type ${value.type()}")
     }
 
     fun Num.isInt(): Boolean = this.roundToInt().toNum() == this

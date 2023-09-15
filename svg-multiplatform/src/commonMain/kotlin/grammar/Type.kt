@@ -2,10 +2,11 @@ package grammar
 
 import Num
 import Utils.type
+import grammar.parsed.Parseable
 import obj.Empty
 import obj.Obj
 
-class Type(val value: Any) {
+class Type(val value: Any): Parseable {
     fun asNum(): Num {
         return when (value) {
             is Num -> value
@@ -36,6 +37,10 @@ class Type(val value: Any) {
     override fun toString(): String = value.toString()
 
     override fun hashCode(): Int = value.hashCode()
+    override fun parse(context: Obj): Type {
+        return this
+    }
+
     override fun equals(other: Any?): Boolean {
         if(other !is Type)
             return false

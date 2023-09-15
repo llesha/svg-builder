@@ -2,10 +2,19 @@ package obj
 
 import Properties
 import Utils.toType
-import grammar.Type
+import grammar.GrammarError
 
 abstract class Obj {
     open val properties: Properties = Properties()
+    val parent: Obj
+        get() = properties["parent"]?.asObj() ?: throw GrammarError("root object has no parent")
+    val root: Container
+        get() {
+            var parent = this
+            while(parent.properties.map.containsKey("parent"))
+                parent = parent.properties["parent"]!!.asObj()
+            return parent as Container
+        }
 
     open fun toSvg(level: Int = 0): String = svgHeader(level) + svgFooter(0)
     protected fun svgHeader(level: Int): String = "${"\t".repeat(level)}<${properties["name"]}${propertiesToString()}>"
@@ -76,29 +85,3 @@ class Recursive(var amount: Int = 1) : Container() {
 }
 
 object Empty : Obj()
-
-enum class Objects {
-    EMPTY,
-    SHAPE,
-    GROUP,
-    CONDITIONAL,
-    RECURSIVE;
-
-    fun make(): Obj {
-        return when (this) {
-            EMPTY -> Empty
-            SHAPE -> Shape()
-            GROUP -> Container()
-            CONDITIONAL -> Conditional()
-            RECURSIVE -> Recursive()
-        }
-    }
-
-    companion object {
-        fun toObject(string: String): Objects {
-            if (string.isEmpty())
-                return EMPTY
-            else return valueOf(string)
-        }
-    }
-}
