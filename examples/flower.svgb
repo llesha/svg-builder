@@ -1,0 +1,27 @@
+/:
+    trunk = [Recursive]
+    svgHeight = 200
+    svgWidth = 200
+/trunk:
+    start:
+        type = [Recursive]
+        name = line
+        x = ../svgWidth / 2
+        y = 0
+    # called everytime for each next element
+    next = 1..100 <= 50 ? [Segment, ] : [Group]
+    size = 5..10
+/trunk/next/1:
+    p = ../prev == [] ?  : ../prev
+
+classes:
+    Segment:
+        args: prev
+        type = [Group]
+        name = line
+        x1 = prev/x1
+        y1 = prev/x2
+
+functions:
+    rotate:
+        x, y, pX, pY ->

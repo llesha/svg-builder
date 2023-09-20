@@ -3,7 +3,10 @@ import Utils.toType
 import grammar.Type
 
 class Properties(vararg args: String) {
-    val map: MutableMap<String, Type> = mutableMapOf("name" to "n".toType())
+    companion object {
+        const val NAME = "%NAME"
+    }
+    val map: MutableMap<String, Type> = mutableMapOf(NAME to "n".toType())
 
     init {
         addAllFromArray(args)

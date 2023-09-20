@@ -6,17 +6,13 @@ enum class Objects {
     EMPTY,
     SHAPE,
     GROUP,
-    CONDITIONAL,
     RECURSIVE;
 
-    fun make(current: Obj): Obj {
-        if(current !is Container)
-            throw GrammarError("Other objects are allowed only inside containers, $current is not a container")
+    fun make(): Obj {
         return when (this) {
             EMPTY -> Empty
             SHAPE -> Shape()
             GROUP -> Container()
-            CONDITIONAL -> Conditional()
             RECURSIVE -> Recursive()
         }
     }

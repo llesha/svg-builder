@@ -6,7 +6,7 @@ import grammar.parsed.Parseable
 import obj.Empty
 import obj.Obj
 
-class Type(val value: Any): Parseable {
+class Type(val value: Any) : Parseable {
     fun asNum(): Num {
         return when (value) {
             is Num -> value
@@ -19,7 +19,7 @@ class Type(val value: Any): Parseable {
         return when (value) {
             is Boolean -> value
             is Num -> value != Utils.defaultNum()
-            is Obj -> if(value is Empty) false else throw TypeError(value.type(), "bool")
+            is Obj -> if (value is Empty) false else throw TypeError(value.type(), "bool")
             else -> throw TypeError(value.type(), "bool")
         }
     }
@@ -41,8 +41,14 @@ class Type(val value: Any): Parseable {
         return this
     }
 
+    override fun match(condition: (Type) -> Boolean): List<Type> {
+        return if (condition(this))
+            listOf(this)
+        else listOf()
+    }
+
     override fun equals(other: Any?): Boolean {
-        if(other !is Type)
+        if (other !is Type)
             return false
         return value == other.value
     }

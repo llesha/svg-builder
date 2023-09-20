@@ -14,6 +14,8 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import grammar.parsed.Arithmetic
 import grammar.parsed.Assignment
+import grammar.parsed.Comparison
+import grammar.parsed.ObjDefinition
 import grammar.parsed.Parseable
 import grammar.parsed.Path
 import grammar.parsed.Ternary
@@ -24,7 +26,7 @@ import kotlin.math.roundToInt
 
 val slash = '\\'
 
-class VariableParser(val current: Obj) : Grammar<List<Parseable>>() {
+class VariableParser() : Grammar<List<ObjDefinition>>() {
     val variables: MutableMap<String, Type> = mutableMapOf()
 
     private val questionT by literalToken("?")
@@ -37,11 +39,14 @@ class VariableParser(val current: Obj) : Grammar<List<Parseable>>() {
     private val isT by literalToken("is")
     private val biggerT by literalToken(">")
     private val smallerT by literalToken("<")
+    private val geqT by literalToken(">=")
+    private val leqT by literalToken("<=")
     private val equalT by literalToken("==")
     private val unequalT by literalToken("!=")
 
     private val mul by literalToken("*")
     private val div by literalToken("/")
+    private val pathSep by literalToken(Path.SEP)
     private val minus by literalToken("-")
     private val plus by literalToken("+")
     private val leftPar by literalToken("(")
@@ -55,7 +60,7 @@ class VariableParser(val current: Obj) : Grammar<List<Parseable>>() {
         (floatNumber map { (it.t1.text + "." + it.t2.text).toNum() })
 
     private val ident by regexToken("[a-zA-Z_]\\w*")
-    private val path: Parser<Parseable> by separatedTerms(ident or rangeT or doubleRangeT, div) map {
+    private val path: Parser<Parseable> by -pathSep and separatedTerms(ident or rangeT or doubleRangeT, pathSep) map {
         Path(it.map { e -> e.text })
     }
 
@@ -86,31 +91,35 @@ class VariableParser(val current: Obj) : Grammar<List<Parseable>>() {
     // name = [Recursive] [Conditional] [Group] [Shape] []
     private val obj: Parser<Type> by ((leftBracket and rightBracket) or (-leftBracket and ident and -rightBracket)) map {
         if (it is TokenMatch) {
-            Objects.toObject(it.text.uppercase()).make(current).toType()
+            Objects.toObject(it.text.uppercase()).make().toType()
         } else Empty.toType()
     }
 
     private val term: Parser<Parseable> by path or
         obj or
         (optional(minus) and notation map {
-        checkNumeric(it.t2, "unary minus")
-        if (it.t1 != null) (-(it.t2.asNum())).toType()
-        else it.t2
-    }) or // this is strange, `or` doesn't work
+            checkNumeric(it.t2, "unary minus")
+            if (it.t1 != null) (-(it.t2.asNum())).toType()
+            else it.t2
+        }) or // this is strange, `or` doesn't work
         (-leftPar and parser(::arithmeticExpression) and -rightPar map { it.toType() }) or
         (-leftPar and parser(::ternary) and -rightPar map { it.toType() })
 
     private val divMulChain: Parser<Parseable> by leftAssociative(
         term, div or mul
-    ) { a, op, b ->
-        Arithmetic(a, b, op.text)
-    }
+    ) { a, op, b -> Arithmetic(a, b, op.text) }
 
     private val arithmeticExpression: Parser<Parseable> by leftAssociative(
         divMulChain, plus or minus
-    ) { a, op, b ->
-        Arithmetic(a, b, op.text)
-    }
+    ) { a, op, b -> Arithmetic(a, b, op.text) }
+
+    private val comparisonExpression: Parser<Parseable> by leftAssociative(
+        arithmeticExpression, smallerT or biggerT or leqT or geqT
+    ) { a, op, b -> Comparison(a, b, op.text) }
+
+    private val equalityExpression: Parser<Parseable> by leftAssociative(
+        comparisonExpression, equalT or unequalT
+    ) { a, op, b -> Comparison(a, b, op.text) }
 
     private val ternary: Parser<Parseable> by (arithmeticExpression or parser(::ternary)) and
         -questionT and (arithmeticExpression or parser(::ternary)) and
@@ -118,20 +127,16 @@ class VariableParser(val current: Obj) : Grammar<List<Parseable>>() {
         Ternary(it.t1, it.t2, it.t3)
     }
 
-    private val assignment: Parser<Parseable> by ident and -assignmentT and (ternary or arithmeticExpression) map {
+    private val assignment: Parser<Assignment> by ident and -assignmentT and (ternary or arithmeticExpression) map {
         Assignment(it.t1.text, it.t2)
-        // if (variables.containsKey(it.t1.text))
-        //     throw GrammarError("Already defined field: ${it.t1.text}")
-        // variables[it.t1.text] = it.t2
-        // it.t2.asObj().props {
-        //     add("name", it.t1.text.toType())
-        //     add("parent", current.toType())
-        // }
-        // it.t2
     }
 
-    override val rootParser: Parser<List<Parseable>> by -optional(variableSep) and
+    private val block: Parser<ObjDefinition> by path and colonT and -optional(variableSep) and
         separatedTerms(assignment, variableSep) and
+        -optional(variableSep) map { ObjDefinition(Path(listOf()), listOf()) }
+
+    override val rootParser: Parser<List<ObjDefinition>> by -optional(variableSep) and
+        separatedTerms(block, variableSep) and
         -optional(variableSep)
 
     override fun toString(): String = variables.toString()
